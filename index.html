@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Menu Currency Converter</title>
+    <style>
+        :root {
+            --bg-color: #fcfbfa;
+            --text-color: #2c2a29;
+            --accent-color: #8b7355;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+        p.subtitle {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .converter-widget {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        .input-group span {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #555;
+        }
+        input {
+            border: none;
+            background: transparent;
+            font-size: 1.25rem;
+            width: 100%;
+            outline: none;
+            color: var(--text-color);
+        }
+        .results {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .rate-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 1.1rem;
+        }
+        .currency-name {
+            font-weight: 500;
+        }
+        .currency-val {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .timestamp {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Menu Price Calculator</h1>
+    <p class="subtitle">Convert Sri Lankan Rupees (LKR) to your home currency instantly.</p>
+
+    <div class="converter-widget">
+        <label for="lkr-input">Enter Menu Price (LKR)</label>
+        <div class="input-group">
+            <span>Rs.</span>
+            <input type="number" id="lkr-input" placeholder="e.g., 1500" value="1500" oninput="calculateInversions()">
+        </div>
+
+        <div class="results">
+            <div class="rate-row">
+                <span class="currency-name">Euro (EUR)</span>
+                <span class="currency-val" id="eur-output">€0.00</span>
+            </div>
+            <div class="rate-row">
+                <span class="currency-name">US Dollar (USD)</span>
+                <span class="currency-val" id="usd-output">\$0.00</span>
+            </div>
+            <div class="rate-row">
+                <span class="currency-name">British Pound (GBP)</span>
+                <span class="currency-val" id="gbp-output">£0.00</span>
+            </div>
+        </div>
+        <div class="timestamp" id="update-time">Loading live exchange rates...</div>
+    </div>
+</div>
+
+<script>
+    let rates = { EUR: 0, USD: 0, GBP: 0 };
+
+    // Fetch live rates from a reliable open API with LKR as base currency
+    async function fetchRates() {
+        try {
+            const response = await fetch('https://er-api.com');
+            const data = await response.json();
+            
+            if (data && data.rates) {
+                rates.EUR = data.rates.EUR;
+                rates.USD = data.rates.USD;
+                rates.GBP = data.rates.GBP;
+                
+                document.getElementById('update-time').innerText = `Rates updated live today`;
+                calculateInversions();
+            }
+        } catch (error) {
+            document.getElementById('update-time').innerText = "Failed to fetch live rates. Using offline backup.";
+            // Fallback static rates if network drops
+            rates = { EUR: 0.0031, USD: 0.0034, GBP: 0.0026 }; 
+            calculateInversions();
+        }
+    }
+
+    function calculateInversions() {
+        const lkrAmount = parseFloat(document.getElementById('lkr-input').value) || 0;
+        
+        const totalEur = (lkrAmount * rates.EUR).toFixed(2);
+        const totalUsd = (lkrAmount * rates.USD).toFixed(2);
+        const totalGbp = (lkrAmount * rates.GBP).toFixed(2);
+
+        document.getElementById('eur-output').innerText = `€${totalEur}`;
+        document.getElementById('usd-output').innerText = `$${totalUsd}`;
+        document.getElementById('gbp-output').innerText = `£${totalGbp}`;
+    }
+
+    // Initialize on page load
+    fetchRates();
+</script>
+
+</body>
+</html>
