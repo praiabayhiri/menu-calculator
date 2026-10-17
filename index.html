@@ -136,7 +136,7 @@
     // Fetch live rates from a reliable open API with LKR as base currency
     async function fetchRates() {
         try {
-            const response = await fetch('https://er-api.com');
+            const response = await fetch('https://exchangerate-api.com');
             const data = await response.json();
             
             if (data && data.rates) {
